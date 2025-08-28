@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MagnifyingGlassIcon, FilmIcon, TvIcon } from '@heroicons/react/24/outline';
 import { IGetSearchResultResDto } from '@/interfaces/getMovieData.interface';
 import { IMovieSummaryDto, ITvSummaryDto } from '@/interfaces/movie.interface';
 
-export default function SearchPage() {
+function SearchPageContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<IGetSearchResultResDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -260,5 +260,25 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense fallback
+function SearchPageLoading() {
+  return (
+    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-500 mx-auto mb-4"></div>
+        <p className="text-white text-lg font-poppins">Loading search page...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchPageLoading />}>
+      <SearchPageContent />
+    </Suspense>
   );
 } 

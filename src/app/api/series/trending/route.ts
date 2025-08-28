@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TMDB_API_BASE_URL, TMDB_ENDPOINTS, TMDB_IMAGE_URL, TMDB_IMAGE_QUALITY } from '@/utils/urls';
-import { ITvSummaryDto } from '@/interfaces/movie.interface';
-
-const TMDB_ACCESS_TOKEN = process.env.TMDB_API_ACCESS_TOKEN;
+import { TMDB_API_BASE_URL, TMDB_IMAGE_URL } from '@/utils/urls';
 
 // Cache configuration
 export const revalidate = 1800; // Revalidate every 30 minutes
@@ -10,30 +7,38 @@ export const revalidate = 1800; // Revalidate every 30 minutes
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const timeWindow = searchParams.get('time_window') || 'day'; // 'day' or 'week'
-    const page = searchParams.get('page') || '1';
+    const timeWindow = searchParams.get('time_window') || 'day';
 
-    const url = `${TMDB_API_BASE_URL}${TMDB_ENDPOINTS.TRENDING_TV}/${timeWindow}?page=${page}`;
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${TMDB_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      next: { revalidate: 1800 }, // Cache for 30 minutes
-    });
+    const apiToken = process.env.TMDB_API_ACCESS_TOKEN;
+    if (!apiToken) {
+      return NextResponse.json(
+        { error: 'TMDB API token not configured' },
+        { status: 500 }
+      );
+    }
+
+    const response = await fetch(
+      `${TMDB_API_BASE_URL}/trending/tv/${timeWindow}?language=en-US`,
+      {
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
+        next: { revalidate: 1800 }, // Cache for 30 minutes
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`TMDB API error: ${response.status}`);
     }
 
     const data = await response.json();
-    
-    // Transform the data to include lower quality image URLs for better performance
-    const transformedResults = data.results.map((series: ITvSummaryDto) => ({
+
+    // Transform the data to include full image URLs with lower quality for better performance
+    const transformedResults = data.results.map((series: any) => ({
       ...series,
-      poster_path: series.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_185}${series.poster_path}` : null,
-      backdrop_path: series.backdrop_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.BACKDROP_SIZES.W_780}${series.backdrop_path}` : null,
+      backdrop_path: series.backdrop_path ? `${TMDB_IMAGE_URL}w780${series.backdrop_path}` : null,
+      poster_path: series.poster_path ? `${TMDB_IMAGE_URL}w185${series.poster_path}` : null,
     }));
 
     // Add cache headers
@@ -42,10 +47,8 @@ export async function GET(request: NextRequest) {
     responseHeaders.set('Content-Type', 'application/json');
 
     return new NextResponse(JSON.stringify({
-      page: data.page,
+      ...data,
       results: transformedResults,
-      total_pages: data.total_pages,
-      total_results: data.total_results,
     }), {
       status: 200,
       headers: responseHeaders,

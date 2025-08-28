@@ -1,41 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TMDB_API_BASE_URL, TMDB_ENDPOINTS, TMDB_IMAGE_URL, TMDB_IMAGE_QUALITY } from '@/utils/urls';
-import { ITvSummaryDto } from '@/interfaces/movie.interface';
+import { TMDB_API_BASE_URL, TMDB_IMAGE_URL } from '@/utils/urls';
 
-const TMDB_ACCESS_TOKEN = process.env.TMDB_API_ACCESS_TOKEN;
+// Cache configuration
+export const revalidate = 3600; // Revalidate every hour
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = searchParams.get('page') || '1';
 
-    const url = `${TMDB_API_BASE_URL}${TMDB_ENDPOINTS.POPULAR_TV}?page=${page}`;
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${TMDB_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const apiToken = process.env.TMDB_API_ACCESS_TOKEN;
+    if (!apiToken) {
+      return NextResponse.json(
+        { error: 'TMDB API token not configured' },
+        { status: 500 }
+      );
+    }
+
+    const response = await fetch(
+      `${TMDB_API_BASE_URL}/tv/popular?language=en-US&page=${page}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
+        next: { revalidate: 3600 }, // Cache for 1 hour
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`TMDB API error: ${response.status}`);
     }
 
     const data = await response.json();
-    
-    // Transform the data to include full image URLs
-    const transformedResults = data.results.map((series: ITvSummaryDto) => ({
+
+    // Transform the data to include full image URLs with lower quality for better performance
+    const transformedResults = data.results.map((series: any) => ({
       ...series,
-      poster_path: series.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_500}${series.poster_path}` : null,
-      backdrop_path: series.backdrop_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.BACKDROP_SIZES.W_1280}${series.backdrop_path}` : null,
+      backdrop_path: series.backdrop_path ? `${TMDB_IMAGE_URL}w780${series.backdrop_path}` : null,
+      poster_path: series.poster_path ? `${TMDB_IMAGE_URL}w185${series.poster_path}` : null,
     }));
 
-    return NextResponse.json({
-      page: data.page,
+    // Add cache headers
+    const responseHeaders = new Headers();
+    responseHeaders.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    responseHeaders.set('Content-Type', 'application/json');
+
+    return new NextResponse(JSON.stringify({
+      ...data,
       results: transformedResults,
-      total_pages: data.total_pages,
-      total_results: data.total_results,
+    }), {
+      status: 200,
+      headers: responseHeaders,
     });
 
   } catch (error) {

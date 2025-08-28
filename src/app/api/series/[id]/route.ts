@@ -6,10 +6,10 @@ export const revalidate = 3600; // Revalidate every hour
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const seriesId = params.id;
+    const { id: seriesId } = await params;
     const apiToken = process.env.TMDB_API_ACCESS_TOKEN;
 
     if (!apiToken) {

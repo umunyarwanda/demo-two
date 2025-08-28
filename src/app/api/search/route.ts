@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TMDB_API_BASE_URL, TMDB_IMAGE_URL, TMDB_IMAGE_QUALITY } from '@/utils/urls';
-import { IMovieSummaryDto, ITvSummaryDto } from '@/interfaces/movie.interface';
-
-const TMDB_ACCESS_TOKEN = process.env.TMDB_API_ACCESS_TOKEN;
+import { TMDB_API_BASE_URL, TMDB_IMAGE_URL } from '@/utils/urls';
 
 // Cache configuration
 export const revalidate = 1800; // Revalidate every 30 minutes
@@ -22,7 +19,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!TMDB_ACCESS_TOKEN) {
+    const apiToken = process.env.TMDB_API_ACCESS_TOKEN;
+    if (!apiToken) {
       return NextResponse.json(
         { error: 'TMDB API token not configured' },
         { status: 500 }
@@ -34,7 +32,7 @@ export async function GET(request: NextRequest) {
     
     const response = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${TMDB_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${apiToken}`,
         'Content-Type': 'application/json',
       },
       next: { revalidate: 1800 }, // Cache for 30 minutes
@@ -49,23 +47,11 @@ export async function GET(request: NextRequest) {
     // Filter and transform results to only include movies and TV shows
     const transformedResults = data.results
       .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
-      .map((item: any) => {
-        if (item.media_type === 'movie') {
-          const movie: IMovieSummaryDto = {
-            ...item,
-            poster_path: item.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_185}${item.poster_path}` : null,
-            backdrop_path: item.backdrop_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.BACKDROP_SIZES.W_780}${item.backdrop_path}` : null,
-          };
-          return movie;
-        } else {
-          const tv: ITvSummaryDto = {
-            ...item,
-            poster_path: item.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_185}${item.poster_path}` : null,
-            backdrop_path: item.backdrop_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.BACKDROP_SIZES.W_780}${item.backdrop_path}` : null,
-          };
-          return tv;
-        }
-      });
+      .map((item: any) => ({
+        ...item,
+        poster_path: item.poster_path ? `${TMDB_IMAGE_URL}w185${item.poster_path}` : null,
+        backdrop_path: item.backdrop_path ? `${TMDB_IMAGE_URL}w780${item.backdrop_path}` : null,
+      }));
 
     // Add cache headers
     const responseHeaders = new Headers();
