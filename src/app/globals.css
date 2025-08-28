@@ -1,26 +1,164 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --primary: #e50914;
+  --secondary: #564d4d;
+  --accent: #00d4ff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-bebas-neue: var(--font-bebas-neue);
+  --font-cinzel: var(--font-cinzel);
+  --font-poppins: var(--font-poppins);
+  --font-sora: var(--font-sora);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Typography Classes */
+.font-bebas {
+  font-family: var(--font-bebas-neue), sans-serif;
+}
+
+.font-cinzel {
+  font-family: var(--font-cinzel), serif;
+}
+
+.font-poppins {
+  font-family: var(--font-poppins), sans-serif;
+}
+
+.font-sora {
+  font-family: var(--font-sora), sans-serif;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #e50914, #00d4ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Swiper Carousel Custom Styles */
+.movie-carousel .swiper-slide,
+.series-carousel .swiper-slide {
+  height: auto;
+}
+
+.movie-carousel .swiper-wrapper,
+.series-carousel .swiper-wrapper {
+  align-items: stretch;
+}
+
+/* Hide default Swiper navigation arrows */
+.movie-carousel .swiper-button-next,
+.movie-carousel .swiper-button-prev,
+.series-carousel .swiper-button-next,
+.series-carousel .swiper-button-prev {
+  display: none;
+}
+
+/* Hide default Swiper pagination */
+.movie-carousel .swiper-pagination,
+.series-carousel .swiper-pagination {
+  display: none;
+}
+
+/* Hero Slider Custom Styles */
+.hero-swiper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hero-swiper .swiper-slide {
+  width: 100%;
+  height: 100%;
+}
+
+.hero-swiper .swiper-wrapper {
+  transition-timing-function: ease-in-out;
+}
+
+/* Hide default Swiper navigation arrows for hero */
+.hero-swiper .swiper-button-next,
+.hero-swiper .swiper-button-prev {
+  display: none;
+}
+
+/* Custom pagination for hero slider */
+.hero-pagination {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.hero-pagination .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-pagination .swiper-pagination-bullet-active {
+  background: white;
+  transform: scale(1.2);
 }
