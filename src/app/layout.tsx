@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, Cinzel, Poppins, Sora } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const bebasNeue = Bebas_Neue({
   weight: '400',
@@ -41,9 +42,10 @@ export default function RootLayout({
         className={`${bebasNeue.variable} ${cinzel.variable} ${poppins.variable} ${sora.variable} antialiased bg-black text-white`}
       >
         <Navbar />
-        <main className="pt-16">
+        <main>
           {children}
         </main>
+        <Footer />
       </body>
     </html>
   );

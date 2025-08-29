@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { IMovieDetailsDto } from '@/interfaces/movie.interface';
+import { ITvDetailsDto } from '@/interfaces/movie.interface';
 import { StarIcon, PlayIcon, PlusIcon, HeartIcon } from '@heroicons/react/24/solid';
 import { TMDB_IMAGE_URL, TMDB_IMAGE_QUALITY } from '@/utils/urls';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -18,6 +18,7 @@ import 'swiper/css/pagination';
 // Recommendations Carousel Component
 function RecommendationsCarousel({ recommendations }: { recommendations: any[] }) {
   const swiperRef = useRef<any>(null);
+  const router = useRouter();
 
   if (recommendations.length === 0) {
     return (
@@ -93,13 +94,13 @@ function RecommendationsCarousel({ recommendations }: { recommendations: any[] }
         loop={true}
         className="recommendations-carousel"
       >
-        {recommendations.slice(0, 20).map((movie) => (
-          <SwiperSlide key={movie.id}>
-            <div className="group cursor-pointer" onClick={() => window.location.href = `/movies/${movie.id}`}>
+        {recommendations.slice(0, 20).map((series) => (
+          <SwiperSlide key={series.id}>
+            <div className="group cursor-pointer" onClick={() => router.push(`/series/${series.id}`)}>
               <div className="relative overflow-hidden rounded-lg">
                 <Image
-                  src={movie.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_185}${movie.poster_path}` : '/placeholder-movie.jpg'}
-                  alt={movie.title}
+                  src={series.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_185}${series.poster_path}` : '/placeholder-movie.jpg'}
+                  alt={series.name}
                   width={300}
                   height={450}
                   className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
@@ -109,17 +110,17 @@ function RecommendationsCarousel({ recommendations }: { recommendations: any[] }
                 {/* Rating badge */}
                 <div className="absolute top-2 right-2 bg-yellow-500 text-black px-2 py-1 rounded-full text-sm font-bold flex items-center gap-1">
                   <StarIcon className="w-4 h-4" />
-                  <span>{movie.vote_average.toFixed(1)}</span>
+                  <span>{series.vote_average.toFixed(1)}</span>
                 </div>
               </div>
               
-              {/* Movie info */}
+              {/* Series info */}
               <div className="mt-3">
                 <h3 className="text-white font-semibold text-sm line-clamp-1 group-hover:text-blue-400 transition-colors">
-                  {movie.title}
+                  {series.name}
                 </h3>
                 <p className="text-gray-400 text-xs">
-                  {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+                  {series.first_air_date ? new Date(series.first_air_date).getFullYear() : 'N/A'}
                 </p>
               </div>
             </div>
@@ -130,21 +131,21 @@ function RecommendationsCarousel({ recommendations }: { recommendations: any[] }
   );
 }
 
-// Similar Movies Carousel Component
-function SimilarMoviesCarousel({ similarMovies }: { similarMovies: any[] }) {
+// Similar Series Carousel Component
+function SimilarSeriesCarousel({ similarSeries }: { similarSeries: any[] }) {
   const swiperRef = useRef<any>(null);
   const router = useRouter();
 
-  if (similarMovies.length === 0) {
+  if (similarSeries.length === 0) {
     return (
       <div className="relative px-0">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bebas text-white tracking-wider">
-            Similar Movies
+            Similar Series
           </h2>
         </div>
         <div className="text-center py-12">
-          <p className="text-gray-400 font-poppins">No similar movies available yet.</p>
+          <p className="text-gray-400 font-poppins">No similar series available yet.</p>
         </div>
       </div>
     );
@@ -154,7 +155,7 @@ function SimilarMoviesCarousel({ similarMovies }: { similarMovies: any[] }) {
     <div className="relative px-0">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bebas text-white tracking-wider">
-          Similar Movies
+          Similar Series
         </h2>
         
         {/* Custom Navigation Buttons */}
@@ -207,15 +208,15 @@ function SimilarMoviesCarousel({ similarMovies }: { similarMovies: any[] }) {
           disableOnInteraction: false,
         }}
         loop={true}
-        className="similar-movies-carousel"
+        className="similar-series-carousel"
       >
-        {similarMovies.slice(0, 20).map((movie) => (
-          <SwiperSlide key={movie.id}>
-            <div className="group cursor-pointer" onClick={() => window.location.href = `/movies/${movie.id}`}>
+        {similarSeries.slice(0, 20).map((series) => (
+          <SwiperSlide key={series.id}>
+            <div className="group cursor-pointer" onClick={() => router.push(`/series/${series.id}`)}>
               <div className="relative overflow-hidden rounded-lg">
                 <Image
-                  src={movie.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_185}${movie.poster_path}` : '/placeholder-movie.jpg'}
-                  alt={movie.title}
+                  src={series.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_185}${series.poster_path}` : '/placeholder-movie.jpg'}
+                  alt={series.name}
                   width={300}
                   height={450}
                   className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
@@ -225,19 +226,141 @@ function SimilarMoviesCarousel({ similarMovies }: { similarMovies: any[] }) {
                 {/* Rating badge */}
                 <div className="absolute top-2 right-2 bg-yellow-500 text-black px-2 py-1 rounded-full text-sm font-bold flex items-center gap-1">
                   <StarIcon className="w-4 h-4" />
-                  <span>{movie.vote_average.toFixed(1)}</span>
+                  <span>{series.vote_average.toFixed(1)}</span>
                 </div>
               </div>
               
-              {/* Movie info */}
+              {/* Series info */}
               <div className="mt-3">
                 <h3 className="text-white font-semibold text-sm line-clamp-1 group-hover:text-blue-400 transition-colors">
-                  {movie.title}
+                  {series.name}
                 </h3>
                 <p className="text-gray-400 text-xs">
-                  {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+                  {series.first_air_date ? new Date(series.first_air_date).getFullYear() : 'N/A'}
                 </p>
               </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
+  );
+}
+
+// Seasons Carousel Component
+function SeasonsCarousel({ seasons, seriesId }: { seasons: any[], seriesId: string }) {
+  const swiperRef = useRef<any>(null);
+  const router = useRouter();
+
+  if (seasons.length === 0) {
+    return (
+      <div className="relative px-4">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-3xl font-bebas text-white tracking-wider">
+            Seasons
+          </h2>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-gray-400 font-poppins">No seasons available yet.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative px-4">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl font-bebas text-white tracking-wider">
+          Seasons
+        </h2>
+        
+        {/* Custom Navigation Buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => swiperRef.current?.slidePrev()}
+            className="w-10 h-10 bg-gray-800/80 text-white rounded-full flex items-center justify-center hover:bg-gray-700/80 transition-colors backdrop-blur-sm"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={() => swiperRef.current?.slideNext()}
+            className="w-10 h-10 bg-gray-800/80 text-white rounded-full flex items-center justify-center hover:bg-gray-700/80 transition-colors backdrop-blur-sm"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <Swiper
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+        }}
+        modules={[Navigation, Pagination, Autoplay]}
+        spaceBetween={24}
+        slidesPerView={1}
+        breakpoints={{
+          640: {
+            slidesPerView: 2,
+          },
+          768: {
+            slidesPerView: 3,
+          },
+          1024: {
+            slidesPerView: 4,
+          },
+          1280: {
+            slidesPerView: 5,
+          },
+          1536: {
+            slidesPerView: 6,
+          },
+        }}
+        autoplay={{
+          delay: 4000,
+          disableOnInteraction: false,
+        }}
+        loop={true}
+        className="seasons-carousel"
+      >
+        {seasons.map((season) => (
+          <SwiperSlide key={season.id}>
+            <div className="group cursor-pointer" onClick={() => router.push(`/series/${seriesId}/seasons/${season.season_number}`)}>
+              <div className="relative mb-3 overflow-hidden rounded-lg">
+                {season.poster_path ? (
+                  <Image
+                    src={`${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_185}${season.poster_path}`}
+                    alt={season.name}
+                    width={200}
+                    height={300}
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                    <span className="text-white font-bold text-2xl">
+                      S{season.season_number}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Episode count badge */}
+                <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                  {season.episode_count} Episodes
+                </div>
+              </div>
+              <h3 className="text-white font-semibold text-sm mb-1 truncate">{season.name}</h3>
+              <p className="text-gray-400 text-xs truncate">
+                {season.air_date ? new Date(season.air_date).getFullYear() : 'TBA'}
+              </p>
+              {season.vote_average > 0 && (
+                <div className="flex items-center gap-1 mt-1">
+                  <StarIcon className="w-3 h-3 text-yellow-400" />
+                  <span className="text-yellow-400 text-xs">{season.vote_average.toFixed(1)}</span>
+                </div>
+              )}
             </div>
           </SwiperSlide>
         ))}
@@ -249,6 +372,7 @@ function SimilarMoviesCarousel({ similarMovies }: { similarMovies: any[] }) {
 // Cast Carousel Component
 function CastCarousel({ cast }: { cast: any[] }) {
   const swiperRef = useRef<any>(null);
+  const router = useRouter();
 
   return (
     <div className="relative px-4">
@@ -803,25 +927,23 @@ function PostersCarousel({ posters }: { posters: any[] }) {
   );
 }
 
-
-
-export default function MoviePage() {
+export default function SeriesPage() {
   const params = useParams();
   const router = useRouter();
-  const movieId = params.id as string;
+  const seriesId = params.id as string;
   
-  const [movie, setMovie] = useState<IMovieDetailsDto | null>(null);
+  const [series, setSeries] = useState<ITvDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMovie = async () => {
+    const fetchSeries = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/movies/${movieId}`);
-        if (!response.ok) throw new Error('Failed to fetch movie details');
+        const response = await fetch(`/api/series/${seriesId}`);
+        if (!response.ok) throw new Error('Failed to fetch series details');
         const data = await response.json();
-        setMovie(data);
+        setSeries(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -829,29 +951,34 @@ export default function MoviePage() {
       }
     };
 
-    if (movieId) {
-      fetchMovie();
+    if (seriesId) {
+      fetchSeries();
     }
-  }, [movieId]);
+  }, [seriesId]);
+
+  // Reset scroll position when seriesId changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [seriesId]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-500 mx-auto mb-4"></div>
-          <p className="text-white text-lg font-poppins">Loading movie details...</p>
+          <p className="text-white text-lg font-poppins">Loading series details...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !movie) {
+  if (error || !series) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bebas text-white mb-2">Oops!</h2>
-          <p className="text-gray-400 font-poppins mb-4">{error || 'Movie not found'}</p>
+          <p className="text-gray-400 font-poppins mb-4">{error || 'Series not found'}</p>
           <button 
             onClick={() => window.location.reload()} 
             className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition-colors font-sora"
@@ -869,8 +996,8 @@ export default function MoviePage() {
       <div className="relative h-screen">
         {/* Background Image */}
         <Image
-          src={movie.backdrop_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.BACKDROP_SIZES.W_1280}${movie.backdrop_path}` : movie.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_780}${movie.poster_path}` : '/placeholder-movie.jpg'}
-          alt={movie.title}
+          src={series.backdrop_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.BACKDROP_SIZES.W_1280}${series.backdrop_path}` : series.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_780}${series.poster_path}` : '/placeholder-movie.jpg'}
+          alt={series.name}
           fill
           className="object-cover"
           priority
@@ -899,8 +1026,8 @@ export default function MoviePage() {
               <div className="lg:col-span-4 xl:col-span-3">
                 <div className="relative group">
                   <Image
-                    src={movie.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_500}${movie.poster_path}` : '/placeholder-movie.jpg'}
-                    alt={movie.title}
+                    src={series.poster_path ? `${TMDB_IMAGE_URL}${TMDB_IMAGE_QUALITY.POSTER_SIZES.W_500}${series.poster_path}` : '/placeholder-movie.jpg'}
+                    alt={series.name}
                     width={280}
                     height={420}
                     className="w-full max-w-xs mx-auto rounded-xl shadow-2xl transition-transform duration-300 group-hover:scale-105"
@@ -909,17 +1036,17 @@ export default function MoviePage() {
                 </div>
               </div>
               
-              {/* Movie Info */}
+              {/* Series Info */}
               <div className="lg:col-span-8 xl:col-span-9">
                 {/* Title */}
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-cinzel font-semibold text-white mb-3 tracking-tight">
-                  {movie.title.toUpperCase()}
+                  {series.name.toUpperCase()}
                 </h1>
                 
                 {/* Tagline */}
-                {movie.tagline && (
+                {series.tagline && (
                   <p className="text-lg md:text-xl text-gray-300 mb-4 font-poppins italic">
-                    "{movie.tagline}"
+                    "{series.tagline}"
                   </p>
                 )}
                 
@@ -927,21 +1054,23 @@ export default function MoviePage() {
                 <div className="flex flex-wrap items-center gap-4 mb-4 text-gray-300 font-poppins">
                   <div className="flex items-center gap-2 bg-yellow-500/20 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-500/30">
                     <StarIcon className="w-5 h-5 text-yellow-400" />
-                    <span className="font-bold text-white text-lg">{movie.vote_average.toFixed(1)}</span>
+                    <span className="font-bold text-white text-lg">{series.vote_average.toFixed(1)}</span>
                   </div>
                   <span className="text-lg">•</span>
-                  <span className="text-lg">{movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}</span>
+                  <span className="text-lg">{series.first_air_date ? new Date(series.first_air_date).getFullYear() : 'N/A'}</span>
                   <span className="text-lg">•</span>
-                  <span className="text-lg">{movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : 'N/A'}</span>
+                  <span className="text-lg">{series.number_of_seasons} Season{series.number_of_seasons !== 1 ? 's' : ''}</span>
+                  <span className="text-lg">•</span>
+                  <span className="text-lg">{series.number_of_episodes} Episode{series.number_of_episodes !== 1 ? 's' : ''}</span>
                   <span className="text-lg">•</span>
                   <span className="bg-green-600/80 text-white px-3 py-1 rounded-full text-sm font-semibold backdrop-blur-sm border border-green-500/50">
-                    {movie.status}
+                    {series.status}
                   </span>
                 </div>
                 
                 {/* Genres */}
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {movie.genres?.slice(0, 3).map((genre) => (
+                  {series.genres?.slice(0, 3).map((genre) => (
                     <span
                       key={genre.id}
                       className="bg-blue-600/30 text-white px-4 py-2 rounded-full text-sm font-semibold border border-blue-500/50 backdrop-blur-sm hover:bg-blue-600/50 transition-all duration-300 cursor-pointer"
@@ -953,16 +1082,16 @@ export default function MoviePage() {
                 
                 {/* Overview */}
                 <p className="text-base md:text-lg text-gray-300 mb-8 max-w-3xl font-poppins leading-relaxed">
-                  {movie.overview}
+                  {series.overview}
                 </p>
                 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3">
                   {/* Watch Trailer Button */}
-                  {movie.videos?.results && movie.videos.results.length > 0 && (
+                  {series.videos?.results && series.videos.results.length > 0 && (
                     <button 
                       onClick={() => {
-                        const trailer = movie.videos?.results?.find(video => 
+                        const trailer = series.videos?.results?.find(video => 
                           video.type === 'Trailer' && video.site === 'YouTube'
                         );
                         if (trailer) {
@@ -973,13 +1102,13 @@ export default function MoviePage() {
                     >
                       <PlayIcon className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                       Watch Trailer
-                  </button>
+                    </button>
                   )}
                   
                   {/* Official Site Button */}
-                  {movie.homepage && (
+                  {series.homepage && (
                     <a 
-                      href={movie.homepage} 
+                      href={series.homepage} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="group bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-sora flex items-center gap-2 text-base shadow-lg hover:shadow-blue-500/25 hover:scale-105"
@@ -992,9 +1121,9 @@ export default function MoviePage() {
                   )}
                   
                   {/* IMDb Button */}
-                  {movie.external_ids?.imdb_id && (
+                  {series.external_ids?.imdb_id && (
                     <a 
-                      href={`https://www.imdb.com/title/${movie.external_ids.imdb_id}`}
+                      href={`https://www.imdb.com/title/${series.external_ids.imdb_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group bg-gradient-to-r from-yellow-600 to-orange-600 text-black font-bold py-3 px-6 rounded-lg hover:from-yellow-700 hover:to-orange-700 transition-all duration-300 font-sora flex items-center gap-2 text-base shadow-lg hover:shadow-yellow-500/25 hover:scale-105"
@@ -1021,12 +1150,17 @@ export default function MoviePage() {
               
               {/* Top Billed Cast Section */}
               <section>
-                <CastCarousel cast={movie.credits?.cast || []} />
+                <CastCarousel cast={series.credits?.cast || []} />
+              </section>
+
+              {/* Seasons Section */}
+              <section>
+                <SeasonsCarousel seasons={series.seasons || []} seriesId={seriesId} />
               </section>
 
               {/* Reviews Section */}
               <section>
-                <ReviewsCarousel reviews={movie.reviews?.results || []} totalReviews={movie.reviews?.total_results || 0} />
+                <ReviewsCarousel reviews={series.reviews?.results || []} totalReviews={series.reviews?.total_results || 0} />
               </section>
 
               {/* Social Media Section */}
@@ -1039,9 +1173,9 @@ export default function MoviePage() {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {movie.external_ids?.facebook_id && (
+                    {series.external_ids?.facebook_id && (
                       <a
-                        href={`https://www.facebook.com/${movie.external_ids.facebook_id}`}
+                        href={`https://www.facebook.com/${series.external_ids.facebook_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 hover:border-gray-700 transition-all duration-300 group hover:bg-gray-800/50"
@@ -1060,9 +1194,9 @@ export default function MoviePage() {
                       </a>
                     )}
                     
-                    {movie.external_ids?.twitter_id && (
+                    {series.external_ids?.twitter_id && (
                       <a
-                        href={`https://twitter.com/${movie.external_ids.twitter_id}`}
+                        href={`https://twitter.com/${series.external_ids.twitter_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 hover:border-gray-700 transition-all duration-300 group hover:bg-gray-800/50"
@@ -1081,9 +1215,9 @@ export default function MoviePage() {
                       </a>
                     )}
                     
-                    {movie.external_ids?.instagram_id && (
+                    {series.external_ids?.instagram_id && (
                       <a
-                        href={`https://www.instagram.com/${movie.external_ids.instagram_id}`}
+                        href={`https://www.instagram.com/${series.external_ids.instagram_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 hover:border-gray-700 transition-all duration-300 group hover:bg-gray-800/50"
@@ -1102,9 +1236,9 @@ export default function MoviePage() {
                       </a>
                     )}
                     
-                    {movie.external_ids?.imdb_id && (
+                    {series.external_ids?.imdb_id && (
                       <a
-                        href={`https://www.imdb.com/title/${movie.external_ids.imdb_id}`}
+                        href={`https://www.imdb.com/title/${series.external_ids.imdb_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 hover:border-gray-700 transition-all duration-300 group hover:bg-gray-800/50"
@@ -1123,9 +1257,9 @@ export default function MoviePage() {
                       </a>
                     )}
                     
-                    {movie.homepage && (
+                    {series.homepage && (
                       <a
-                        href={movie.homepage}
+                        href={series.homepage}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 hover:border-gray-700 transition-all duration-300 group hover:bg-gray-800/50"
@@ -1144,7 +1278,7 @@ export default function MoviePage() {
                       </a>
                     )}
                     
-                    {(!movie.external_ids?.facebook_id && !movie.external_ids?.twitter_id && !movie.external_ids?.instagram_id && !movie.external_ids?.imdb_id && !movie.homepage) && (
+                    {(!series.external_ids?.facebook_id && !series.external_ids?.twitter_id && !series.external_ids?.instagram_id && !series.external_ids?.imdb_id && !series.homepage) && (
                       <div className="col-span-full text-center py-12">
                         <p className="text-gray-400 font-poppins">No social media links available</p>
                       </div>
@@ -1163,7 +1297,7 @@ export default function MoviePage() {
               <section className="bg-gradient-to-br from-gray-900/80 via-gray-800/60 to-gray-900/80 rounded-xl p-6 border border-gray-700/50 shadow-xl backdrop-blur-sm">
                 <h3 className="text-white font-semibold mb-6 font-poppins">Production Companies</h3>
               <div className="space-y-4">
-                  {movie.production_companies?.map((company: any, index: number) => (
+                  {series.production_companies?.map((company: any, index: number) => (
                     <div key={index} className="flex items-center gap-3">
                       {company.logo_path ? (
                         <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center overflow-hidden">
@@ -1190,7 +1324,7 @@ export default function MoviePage() {
                       </div>
                   </div>
                 ))}
-                  {(!movie.production_companies || movie.production_companies.length === 0) && (
+                  {(!series.production_companies || series.production_companies.length === 0) && (
                     <p className="text-gray-400 font-poppins text-sm text-center py-4">
                       No production companies available
                     </p>
@@ -1198,117 +1332,48 @@ export default function MoviePage() {
                   </div>
               </section>
 
-              {/* Social Media Section */}
-              {/* <section className="bg-gray-900/30 rounded-lg p-6 border border-gray-800/50">
-                <h3 className="text-white font-semibold mb-4 font-poppins">Social Media</h3>
-                <div className="space-y-3">
-                  {movie.external_ids?.facebook_id && (
-                    <a
-                      href={`https://www.facebook.com/${movie.external_ids.facebook_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors group"
-                    >
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-700 transition-colors">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                      </div>
-                      <span className="font-poppins text-sm">Facebook</span>
-                    </a>
-                  )}
-                  {movie.external_ids?.twitter_id && (
-                    <a
-                      href={`https://twitter.com/${movie.external_ids.twitter_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors group"
-                    >
-                      <div className="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                        </svg>
-                      </div>
-                      <span className="font-poppins text-sm">Twitter</span>
-                    </a>
-                  )}
-                  {movie.external_ids?.instagram_id && (
-                    <a
-                      href={`https://www.instagram.com/${movie.external_ids.instagram_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors group"
-                    >
-                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center group-hover:from-purple-600 group-hover:to-pink-600 transition-colors">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987 6.62 0 11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323z"/>
-                        </svg>
-                      </div>
-                      <span className="font-poppins text-sm">Instagram</span>
-                    </a>
-                  )}
-                  {movie.external_ids?.imdb_id && (
-                    <a
-                      href={`https://www.imdb.com/title/${movie.external_ids.imdb_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors group"
-                    >
-                      <div className="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center group-hover:bg-yellow-700 transition-colors">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
-                      </div>
-                      <span className="font-poppins text-sm">IMDb</span>
-                    </a>
-                  )}
-                  {movie.homepage && (
-                    <a
-                      href={movie.homepage}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors group"
-                    >
-                      <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center group-hover:bg-gray-700 transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </div>
-                      <span className="font-poppins text-sm">Official Site</span>
-                    </a>
-                  )}
-                  {(!movie.external_ids?.facebook_id && !movie.external_ids?.twitter_id && !movie.external_ids?.instagram_id && !movie.external_ids?.imdb_id && !movie.homepage) && (
-                    <p className="text-gray-400 font-poppins text-sm text-center py-4">
-                      No social media links available
-                    </p>
-                  )}
-                </div>
-              </section> */}
-
-              {/* Movie Details */}
+              {/* Series Details */}
               <section className="bg-gradient-to-br from-gray-900/80 via-gray-800/60 to-gray-900/80 rounded-xl p-6 border border-gray-700/50 shadow-xl backdrop-blur-sm">
                 <h3 className="text-white font-semibold mb-4 font-poppins">Details</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Status</span>
-                    <span className="text-white">{movie.status}</span>
+                    <span className="text-white">{series.status}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Original Language</span>
-                    <span className="text-white">{movie.original_language?.toUpperCase()}</span>
+                    <span className="text-white">{series.original_language?.toUpperCase()}</span>
                   </div>
-                  {movie.budget > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Type</span>
+                    <span className="text-white">{series.type}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Seasons</span>
+                    <span className="text-white">{series.number_of_seasons}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Episodes</span>
+                    <span className="text-white">{series.number_of_episodes}</span>
+                  </div>
+                  {series.first_air_date && (
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Budget</span>
-                      <span className="text-white">${(movie.budget / 1000000).toFixed(1)}M</span>
-                  </div>
-                )}
-                  {movie.revenue > 0 && (
+                      <span className="text-gray-400">First Air Date</span>
+                      <span className="text-white">{new Date(series.first_air_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  {series.last_air_date && (
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Revenue</span>
-                      <span className="text-white">${(movie.revenue / 1000000).toFixed(1)}M</span>
-                  </div>
-                )}
+                      <span className="text-gray-400">Last Air Date</span>
+                      <span className="text-white">{new Date(series.last_air_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  {series.in_production !== undefined && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">In Production</span>
+                      <span className="text-white">{series.in_production ? 'Yes' : 'No'}</span>
+                    </div>
+                  )}
               </div>
               </section>
 
@@ -1316,7 +1381,7 @@ export default function MoviePage() {
               <section className="bg-gradient-to-br from-gray-900/80 via-gray-800/60 to-gray-900/80 rounded-xl p-6 border border-gray-700/50 shadow-xl backdrop-blur-sm">
                 <h3 className="text-white font-semibold mb-4 font-poppins">Keywords</h3>
                 <div className="flex flex-wrap gap-2">
-                  {movie.keywords?.keywords?.slice(0, 15).map((keyword) => (
+                  {series.keywords?.results?.slice(0, 15).map((keyword) => (
                   <span
                     key={keyword.id}
                       className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-gray-700 transition-colors cursor-pointer border border-gray-700"
@@ -1333,27 +1398,27 @@ export default function MoviePage() {
         <div className="container mx-auto px-6 flex flex-col gap-8 mt-10">
           {/* Videos Section */}
           <section>
-            <VideosCarousel videos={movie.videos?.results || []} />
+            <VideosCarousel videos={series.videos?.results || []} />
           </section>
 
           {/* Backdrops Section */}
           <section>
-            <BackdropsCarousel backdrops={movie.images?.backdrops || []} />
+            <BackdropsCarousel backdrops={series.images?.backdrops || []} />
           </section>
 
           {/* Posters Section */}
           <section>
-            <PostersCarousel posters={movie.images?.posters || []} />
+            <PostersCarousel posters={series.images?.posters || []} />
           </section>
 
           {/* Recommendations Section */}
           <section>
-            <RecommendationsCarousel recommendations={movie.recommendations?.results || []} />
+            <RecommendationsCarousel recommendations={series.recommendations?.results || []} />
           </section>
 
-          {/* Similar Movies Section */}
+          {/* Similar Series Section */}
           <section>
-            <SimilarMoviesCarousel similarMovies={movie.similar?.results || []} />
+            <SimilarSeriesCarousel similarSeries={series.similar?.results || []} />
           </section>
         </div>
       </div>

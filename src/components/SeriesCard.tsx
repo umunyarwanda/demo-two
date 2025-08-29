@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ITvSummaryDto } from '@/interfaces/movie.interface';
 import { StarIcon } from '@heroicons/react/16/solid';
 
@@ -11,12 +12,14 @@ interface SeriesCardProps {
 
 export default function SeriesCard({ series }: SeriesCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
 
   return (
     <div 
       className="relative group cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => router.push(`/series/${series.id}`)}
     >
       {/* Poster */}
       <div className="relative overflow-hidden rounded-lg">

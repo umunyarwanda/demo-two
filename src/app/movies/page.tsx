@@ -16,7 +16,11 @@ export default function MoviesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -26,6 +30,8 @@ export default function MoviesPage() {
         if (!response.ok) throw new Error('Failed to fetch movies');
         const data: ApiResponse<IMovieSummaryDto> = await response.json();
         setMovies(data.results);
+        setTotalPages(data.total_pages);
+        setHasMore(data.page < data.total_pages);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -35,6 +41,34 @@ export default function MoviesPage() {
 
     fetchMovies();
   }, []);
+
+  const loadMoreMovies = async () => {
+    if (loadingMore || !hasMore) return;
+
+    try {
+      setLoadingMore(true);
+      const nextPage = currentPage + 1;
+      const response = await fetch(`/api/movies/popular?page=${nextPage}`);
+      if (!response.ok) throw new Error('Failed to fetch more movies');
+      const data: ApiResponse<IMovieSummaryDto> = await response.json();
+      
+      setMovies(prev => [...prev, ...data.results]);
+      setCurrentPage(nextPage);
+      setHasMore(nextPage < data.total_pages);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load more movies');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Reset pagination when search or filter changes
+  useEffect(() => {
+    if (searchTerm || selectedGenre) {
+      setCurrentPage(1);
+      setHasMore(true);
+    }
+  }, [searchTerm, selectedGenre]);
 
   // Get unique genres from movies
   const allGenres = Array.from(new Set(movies.flatMap(movie => 
@@ -143,16 +177,53 @@ export default function MoviesPage() {
         <div className="mb-6">
           <p className="text-gray-400 font-poppins">
             Showing {filteredMovies.length} of {movies.length} movies
+            {totalPages > 0 && (
+              <span className="ml-2 text-gray-500">
+                (Page {currentPage} of {totalPages})
+              </span>
+            )}
           </p>
         </div>
 
         {/* Movies Grid */}
         {filteredMovies.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-            {filteredMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {filteredMovies.map((movie) => (
+                <MovieCard key={movie.id} movie={movie} />
+              ))}
+            </div>
+            
+            {/* Load More Button */}
+            {hasMore && !searchTerm && !selectedGenre && (
+              <div className="text-center mt-12">
+                <button
+                  onClick={loadMoreMovies}
+                  disabled={loadingMore}
+                  className="bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors font-sora flex items-center gap-2 mx-auto"
+                >
+                  {loadingMore ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Load More Movies
+                    </>
+                  )}
+                </button>
+                {currentPage > 1 && (
+                  <p className="text-gray-500 text-sm mt-2 font-poppins">
+                    Loaded {currentPage} of {totalPages} pages
+                  </p>
+                )}
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-16">
             <div className="text-gray-500 text-6xl mb-4">🎬</div>
